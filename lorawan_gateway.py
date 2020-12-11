@@ -123,6 +123,8 @@ def gateway():
             print('incoming pkt...')
             # read incoming packet info
             pkt_json = proc.stdout.readline().decode('utf-8')
+            # remove "gateway status update" text from TTN packet
+            pkt_json = pkt_json.replace("gateway status update", "")
             print(pkt_json)
             # parse packet
             pkt_data = json.loads(pkt_json)
