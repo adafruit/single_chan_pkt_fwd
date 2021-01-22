@@ -15,7 +15,27 @@ from digitalio import DigitalInOut, Direction, Pull
 import board
 # Import the SSD1306 module.
 import adafruit_ssd1306
+import neopixel
+pixel_pin = board.D18
+ORDER = neopixel.GRB
+num_pixels = 8
+pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1.0, auto_write=False, pixel_order=ORDER)
+RED = (255, 0, 0)
+YELLOW = (255, 150, 0)
+GREEN = (0, 255, 0)
+CYAN = (0, 255, 255)
+BLUE = (0, 0, 255)
+PURPLE = (180, 0, 255)
+def blink(color, wait):
+    """Blink animation. Blinks all pixels."""
+    pixels.fill(color)
+    pixels.show()
+    time.sleep(wait)
+    pixels.fill((0, 0, 0))
+    pixels.show()
+    time.sleep(wait)
 
+blink(RED, 0.5)
 # Button A
 btnA = DigitalInOut(board.D5)
 btnA.direction = Direction.INPUT
@@ -84,12 +104,15 @@ def stats():
     display.text(str(MemUsage), 0, 25, 1)
     # display text for 3 seconds
     display.show()
+
     time.sleep(3)
 
 def gateway():
     """Runs the single channel packet forwarder,
     sends output to a display.
     """
+    pixels.fill(YELLOW)
+    pixels.show()
     print('MODE: Pi Gateway')
     # Clear Display
     display.fill(0)
@@ -106,6 +129,7 @@ def gateway():
     display.text(gateway_name, 15, 0, 1)
     display.show()
     while True:
+        pixels.fill(GREEN)
         new_line = proc.stdout.readline().decode('utf-8')
         print(new_line)
         # grab new data on gateway status update
@@ -121,6 +145,10 @@ def gateway():
         elif new_line == "incoming packet...\n":
             display.fill(0)
             print('incoming pkt...')
+            for blinks in range(3):
+                blink(BLUE, 0.1)
+            pixels.fill(GREEN)
+            pixels.show()
             # read incoming packet info
             pkt_json = proc.stdout.readline().decode('utf-8')
             # remove "gateway status update" text from TTN packet
@@ -177,6 +205,9 @@ while True:
     if not btnC.value:
         # show gateway configuration
         gateway_info()
+        time.sleep(10)
+        break
+    gateway()
 
     display.show()
     time.sleep(.1)
